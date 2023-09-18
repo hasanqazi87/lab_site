@@ -1,6 +1,5 @@
 # This file defines classes that render forms that are used to process user input
 
-from cProfile import label
 from collections import OrderedDict
 from django import forms
 from django.forms import formset_factory
