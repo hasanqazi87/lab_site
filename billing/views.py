@@ -2,10 +2,6 @@
 # and return them to the client
 
 # Reportlab imports
-from heapq import merge
-import imp
-from sys import prefix
-from typing import Any, OrderedDict
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import getSampleStyleSheet
@@ -31,6 +27,7 @@ from decimal import Decimal as Dec, getcontext as get_decimal_context, ROUND_HAL
 from operator import attrgetter, itemgetter
 from math import ceil
 from re import compile as re_compile
+from collections import OrderedDict
 
 # Django imports
 from django.views.generic import FormView
