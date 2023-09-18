@@ -1,0 +1,37 @@
+{# This file renders HTML templating for the Credit Request form view #}
+{% extends 'admin/base.html' %}
+{% load humanize static %}
+{% block title %}Credit Request{% endblock %}
+
+{% block branding %}
+<h1>Credit Request</h1>
+{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}
+<form action="" method="post">
+    <table>
+        {% for f in form %}
+        <tr>
+            <th>{{ f.label_tag }}<br/>{{ f.errors }}<br/>{{ f.help_text }}</th>
+            <td>{{ f }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {{ formset.management_form }}
+    <table>
+        {% for fm in formset %}
+        <tr>
+            <th>{{ forloop.counter }}</th>
+            {% for f in fm %}
+            <td>{{ f.label_tag }}<br/>{{ f }}<br/>{{ f.errors }}<br/>{{ f.help_text }}</td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+        <tr>
+            <th><input type="submit" value="Generate Request Form" title="Generate Request Form"></th>
+            <td></td>
+        </tr>
+    </table>
+</form>
+<p>{{ form.non_field_errors }}</p>
+{% endblock %}

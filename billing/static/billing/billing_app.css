@@ -1,0 +1,177 @@
+/* All styling for the billing app */
+
+.tabs, .savepath_form {
+    margin-bottom: 20px;
+}
+
+.tabs ul, #form, #form div, #form input[type=submit], #form input[type=button], .job_table {
+    margin-top: 20px;
+}
+
+.tabs ul, #form, .savepath_form, .breadcrumbs div {
+    text-align: center;
+}
+
+table li, .tabs ul {
+    list-style-type: none;
+}
+
+.tabs li, .tabs ul {
+    display: inline;
+}
+
+.tabs ul, ul {
+    padding-left: 0px;
+}
+
+.tabs li, .breadcrumbs div {
+    padding: 5px 10px;
+}
+
+table th, table td {
+    vertical-align: middle;
+}
+
+#content {
+    padding: 0px;
+}
+
+.invoice_summary_total {
+    background-color: rgba(65, 118, 144, 0.6);
+}
+
+.invoice_summary {
+    background-color: rgba(121, 174, 200, 0.25);
+}
+
+.invoice_summary, .invoice_summary_total {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid gray;
+}
+
+.invoice_summary:hover {
+    opacity: 0.8;
+}
+
+.ui-tabs-panel, .credit {
+    padding: 20px;
+}
+
+.ui-tabs-active {
+    font-weight: bolder;
+    font-size: 15px;
+}
+
+.ui-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+}
+
+.ui-icon-circle-triangle-e {
+    background-position: -48px -192px;
+}
+
+.ui-icon-circle-triangle-s {
+    background-position: -64px -192px;
+}
+
+.ui-icon-info {
+    background-position: -16px -144px;
+}
+
+.ui-icon-mail-closed {
+    background-position: -80px -96px;
+}
+
+.ui-icon-mail-closed:hover {
+    background-position: -96px -96px;
+}
+
+.ui-icon-alert {
+    background-position: 0 -144px;
+}
+
+.help_text, #popup {
+    font-size: 10pt;
+}
+
+.help_text {
+    color: #417690;
+}
+
+input[type=submit] {
+    margin-right: 10px;
+}
+
+#popup, .orig_form, #yes_img {
+    display: none;
+}
+
+#popup {
+    background-color: #ffc;
+    padding: 10px 20px;
+}
+
+#reset_form, .orig_form input[type=button], input.clear_invoices {
+    background-color: #b00000;
+}
+
+.warning {
+    color: #b00000;
+}
+
+#reset_form:hover, .orig_form input[type=button]:hover, input.clear_invoices:hover, input.clear_invoices:focus {
+    background-color: #730000;
+}
+
+.adj_form {
+    margin-bottom: 20px;
+}
+
+.adj_form table {
+    border-bottom: 1px solid black;
+    margin-left: 0px;
+}
+
+.adj_form td, .adj_form th {
+    border: none;
+    text-align: left;
+    vertical-align: middle;
+    background-color: white;
+    color: black;
+    padding: 3px;
+}
+
+.add_adj:hover, .del_adj:hover {
+    cursor: pointer;
+}
+
+.help_text, .add_adj, .invoice_summary a, .warning {
+    font-weight: bolder;
+}
+
+.breadcrumbs span {
+    margin-right: 20px;
+}
+
+.invoice_summary_total b:last-child {
+    padding-right: 20px;
+}
+
+.provider_summary {
+    margin-top: 40px;
+}
+
+input [name$=des], input[name$=invoice_no] {
+    width: 350px;
+}
+
+input[name$=credit] {
+    margin-left: 20px;
+}
+
+.thin {
+    width: 80px;
+}

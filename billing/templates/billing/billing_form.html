@@ -1,0 +1,204 @@
+{# This file renders HTML templating for the main form of this app #}
+{% extends 'admin/base.html' %}
+{% load humanize static %}
+{% block title %}Invoice Generator{% endblock %}
+{% block extrastyle %}
+<link href="{% static 'lab_site_admin/result_template_style.css' %}" rel="stylesheet"/>
+<link href="{% static 'billing/billing_app.css' %}" rel="stylesheet"/>
+<link href="{% static 'lab_site_admin/small_ici_logo.png' %}" rel="icon"/>
+<style>
+    .ui-state-default .ui-icon {
+        background-image: url("{% static 'lab_site_admin/jquery-ui/themes/smoothness/images/ui-icons_2e83ff_256x240.png' %}");
+    }
+</style>
+{% endblock %}
+{% block extrahead %}
+<script src="{% static 'admin/js/vendor/jquery/jquery.js' %}"></script>
+<script src="{% static 'lab_site_admin/jquery-ui/jquery-ui.js' %}"></script>
+<script src="{% static 'admin/js/jquery.init.js' %}"></script>
+<script src="{% static 'billing/billing_app.js' %}"></script>
+{% endblock %}
+{% block branding %}
+{% if cd.period %}
+<h1>Billing for <strong>{{ cd.period.1|date:'F Y' }}</strong></h1>
+{% else %}
+<h1>Invoice Generator</h1>
+{% endif %}
+{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}
+
+{# HIDDEN INPUTS AND FORMS #}
+<input id="step" type="hidden" value="{{ step }}"/>
+
+{# TAB SELECTOR #}
+<div class="tabs">
+    <div class="breadcrumbs">
+        <div>
+            <span><a href="{% url 'index:index' %}">Home</a></span>
+            <span><a href="{% url 'admin:macola_macolaacct_changelist' %}" target="_blank">Customer Account Admin</a></span>
+            <span><a href="{% url 'billing:request_macola' 'none' %}" target="_blank">Generate MACOLA Request Form</a></span>
+            <span><a href="{% url 'billing:credit_request' %}" target="_blank">Generate Credit Request</a></span>
+        </div>
+        <div>
+            <ul>
+                <li><a href="#form">Select Invoice Period</a></li>
+                {% regroup billing_data by cat as category_list %}
+                {% for category in category_list %}
+                {% with cat=category.grouper %}
+                <li><a href="#{{ cat.id }}">({{ cat.number }}) {{ cat.description }}</a></li>
+                {% endwith %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div id="popup">
+        <img src="{% static 'admin/img/icon-alert.svg' %}" alt="alert image"/>
+        <span></span>
+    </div>
+
+    {# FORM TAB #}
+    <div id="form">
+        <form action="" method="post">
+            {% csrf_token %}
+            {% if not category_list and step %}<h1>No jobs available to invoice for this period. Please try another.</h1>{% endif %}
+            {{ form.non_field_errors }}
+            {% for f in form %}
+            <div>{{ f.label_tag }} {{ f }}<br/>{{ f.errors }}<span class="help_text">{{ f.help_text }}</span></div>
+            {% endfor %}
+            <input type="submit" value="Query" data-msg="Querying Invoicing Data..." data-timeout="null"/>
+            <input type="button" id="reset_form" value="Clear Form"/>
+        </form>
+    </div>
+
+    {# INVOICE TABS #}
+    {% for category in category_list %}
+    {% with cat=category.grouper catlist=category.list cat_des=category.grouper.description macolas_needed=category.grouper.macolas_needed %}
+    <div class="invoices" id="{{ cat.id }}">
+        <h1><strong>
+            {{ catlist|length|intcomma }} {{ cat.description }} Jobs in the amount of
+            ${{ cat.sales|floatformat:'2'|intcomma }} + ${{cat.tax|floatformat:'2'|intcomma }}
+            Tax = ${{ cat.total|floatformat:'2'|intcomma }}
+        </strong></h1>
+        <form action="{% url 'billing:genpdf' %}" method="post">
+            {% csrf_token %}
+            <input type="hidden" name="cat_id" value="{{ cat.id }}"/>
+            <div class="savepath_form">
+                {{ cat.savepath_form.as_p }}
+                {% if cat.has_providers %}
+                <input type="submit" title="Generate {{ cat_des }} Provider Summaries" class="genpdf"
+                 value="Generate {{ cat_des }} Provider Summaries" name="_summary" data-msg="Generating {{ cat_des }} Provider Summaries"
+                 data-timeout="5000"/>
+                {% endif %}
+                <input type="submit" title="Generate {{ cat_des }} Invoice Register" class="genpdf"
+                 value="Generate {{cat_des }} Invoice Register" name="_register" data-msg="Generating {{ cat_des }} Invoice Register..."
+                 data-timeout="5000"/>
+                <input type="submit" title="Generate {{cat_des }} Invoices" class="genpdf" value="Generate {{cat_des }} Invoices"
+                 name="_invoices" data-msg="Generating {{ cat_des }} Invoices..." data-timeout="5000"/>
+                <input type="button" title="Clear Invoice Numbers" class="clear_invoices" value="Clear Invoice Numbers"/>
+            </div>
+
+            {% regroup catlist by provider as provider_list %}
+            {% for provider in provider_list %}
+            {% with prov=provider.grouper provlist=provider.list %}
+            {% if prov %}
+            <div class="provider_summary">
+                <p class="invoice_summary_total">
+                    <img src="{% static 'admin/img/icon-alert.svg' %}" alt="alert icon"/>
+                    <strong>
+                        {{ prov.name }} ({{ provlist|length|intcomma }} Job{{ provlist|length|pluralize }} for
+                        ${{ prov.sales|floatformat:'2'|intcomma }})
+                    </strong>
+                </p>
+            </div>
+            {% endif %}
+            <div>
+                {{ cat.invoice_no_manager }}
+                {% if macolas_needed %}
+                <div class="provider_summary">
+                    <p class="invoice_summary_total_warning">
+                        {{ macolas_needed }} MACOLA number{{ macolas_needed|pluralize }} needed below
+                    </p>
+                </div>
+                {% endif %}
+                {% regroup provlist by acct as account_list %}
+                {% for account in account_list %}
+                {% with acct=account.grouper acctlist=account.list %}
+                <div class="invoice_summary" title="Double-click to expand or collapse">
+                    <span>
+                        {{ acct.name }} (#{{ acct.account_No }}): <strong>{{ acctlist|length }}</strong>
+                        Job{{acctlist|length|pluralize }} for <strong>${{ acct.sales|floatformat:'2'|intcomma }}</strong>
+                        {% if acct.tax %}
+                        + <strong>${{ acct.tax|floatformat:'2'|intcomma }} Tax</strong> =
+                        <strong>${{acct.total|floatformat:'2'|intcomma }} Total</strong>
+                        {% endif %}
+                        {% if acct.email %}
+                        <span class="ui-icon ui-icon-mail-closed" title="Email Invoice to {{acct.email }}"></span>
+                        {% endif %}
+                    </span>
+                    <br/>
+                    <span>
+                        {{ acct.invoice_no_form.invoice_no.label_tag }} {{ acct.invoice_no_form.invoice_no }}
+                        {% if not acct.macola_No and not prov %}
+                        <a href="{% url 'billing:request_macola' acct.account_No %}" target="_blank" title="Click to request MACOLA number">
+                            Generate MACOLA Request Form
+                        </a>
+                        {% endif %}
+                    </span>
+                </div>
+
+                <div>
+                    <div>
+                        {{ acct.include_manager }}
+                        <table class="job_table">
+                            <tr>
+                                <th><input type="checkbox" class="select_jobs" checked /></th>
+                                <th>Job ID</th>
+                                <th>Enter Date</th>
+                                <th>Ship Date</th>
+                                <th>Patient Name</th>
+                                <th>Price</th>
+                            </tr>
+                            {% for job in acctlist %}
+                            <tr>
+                                <td>{{ job.include_form.include }}</td>
+                                <td>{{ job.job_id }}</td>
+                                <td>{{ job.enter_date|default:'N/A' }}</td>
+                                <td>{{ job.ship_date|default:'N/A' }}</td>
+                                <td>{{ job.patient_name }}</td>
+                                <td>{{ job.sales|floatformat:'2'|intcomma }}</td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+
+                    <div class="adj_form">
+                        {% with adj_formset=acct.adj_formset adj_forms=acct.adj_formset.forms %}
+                        {{ adj_formset.management_form }}
+                        {% for adj_form in adj_forms %}
+                        <table>
+                            {% for f in adj_form %}
+                            <tr>
+                                <th>{{ f.label_tag }}</th>
+                                <td>{{ f }}<br/><span class="help_text">{{ f.help_text }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                        {% endfor %}
+                        {% endwith %}
+                        <span class="add_adj" title="Click here to add an adjustment" data-no_icon="{% static 'admin/img/icon-no.svg' %}">
+                            <img src="{% static 'admin/img/icon-addlink.svg' %}" alt="adding image"> Add Another Adjustment
+                        </span>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </form>
+    </div>
+    {% endwith %}
+    {% endfor %}
+</div>
+{% endblock %}

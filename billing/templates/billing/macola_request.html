@@ -1,0 +1,24 @@
+{# This file renders HTML templating for the MACOLA Request form view #}
+{% extends 'admin/base.html' %}
+{% load humanize static %}
+{% block title %}MACOLA Request{% endblock %}
+
+{% block branding %}
+<h1>MACOLA Request for {{ acct_no }}</h1>
+{% endblock %}
+{% block breadcrumbs %}{% endblock %}
+{% block content %}
+<p>{{ form.non_field_errors }}</p>
+<table>
+    {% for f in form %}
+    <tr>
+        <th>{{ f.label_tag }}<br/>{{ f.errors }}<br/>{{ f.help_text }}</th>
+        <td>{{ f }}</td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <th><input type="submit" action="" value="Generate PDF"></th>
+        <td></td>
+    </tr>
+</table>
+{% endblock %}
